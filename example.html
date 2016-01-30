@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>videojs-vast-vpaid test</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+    <script type="text/javascript">
+        // this is mandatory for IE8 !!!!!
+        document.createElement('video');
+        document.createElement('audio');
+        document.createElement('track');
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="https://necolas.github.io/normalize.css/3.0.2/normalize.css" />
+    <link href="http://vjs.zencdn.net/5.5.3/video-js.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="http://mailonline.github.io/videojs-vast-vpaid/styles/videojs.vast.vpaid.css"/>
+
+   	
+	<script type="text/javascript" src="http://mailonline.github.io/videojs-vast-vpaid/scripts/es5-shim.js"></script>
+	<script type="text/javascript" src="http://jpillora.com/xhook/dist/xhook.js"></script>
+	<script type="text/javascript" src="http://mailonline.github.io/videojs-vast-vpaid/scripts/swfobject.js"></script>
+    <script type="text/javascript" src="http://vjs.zencdn.net/ie8/1.1.1/videojs-ie8.min.js"></script>
+    
+	
+	<script type="text/javascript" src="http://vjs.zencdn.net/5.5.3/video.js"></script>	
+	<script type="text/javascript" src="http://hirochamkov.com/wp-content/themes/videojs/Youtube.js"></script>
+    <script type="text/javascript" src="http://mailonline.github.io/videojs-vast-vpaid/scripts/videojs_5.vast.vpaid.js"></script>
+
+	<style>
+	.vjs-black-poster {
+		display: none !important;
+	}
+	</style>
+	
+</head>
+<body>
+
+<h1 class="title main">videojs-vast-vpaid plugin v2</h1>
+
+<video id="player" class="video-js vjs-default-skin" controls preload="none" width="640" height="360">
+	<source src="http://www.youtube.com/watch?v=IkMPZ7WeDck" type="video/youtube" />
+</video>
+
+<script type="text/javascript">
+        videojs.plugin('ads-setup', function(opts) {
+            var player = this;
+            var vastAd = player.vastClient({
+                url: getAdsUrl,
+                playAdAlways: opts.playAdAlways || true,
+                adCancelTimeout: opts.adsCancelTimeout || 5000,
+                adsEnabled: !!opts.adsEnabled
+            });
+            player.on('reset', function () {
+                if (!!opts.adsEnabled) {
+                    vastAd.enable();
+                } else {
+                    vastAd.disable();
+                }
+            });
+            player.on('vast.aderror', function(evt) {
+                var error = evt.error;
+                if(error && error.message) {
+                    console.error(error.message);
+                }
+            });
+            function getAdsUrl() {
+                var tag = opts.tag || '';
+                try {
+                    var playerstyle = (typeof(window.getComputedStyle) != "undefined") ? window.getComputedStyle(player.el(), null) : player.el().currentStyle;
+                    tag = tag.replace('__enable-vpaid__', VPAIDFLASHClient.isSupported() ? '1' : '0');
+                    tag = tag.replace('__page-url__', escape(document.location.href));
+                    tag = tag.replace('__player-width__', Math.max(parseInt(playerstyle.width) || 0, 100));
+                    tag = tag.replace('__player-height__', Math.max(parseInt(playerstyle.height) || 0, 100));
+                    tag = tag.replace('__random-number__', Math.round(Math.random() * 100000) );
+                } finally {
+                    return tag;
+                }
+            }
+        });
+        videojs('player', {
+            'techOrder': ['youtube', 'flash', 'html5'],
+			'autoplay': false,
+            'plugins': {
+                'ads-setup': {
+                    'adsEnabled' :true,
+                    'tag': 'http://rtr.innovid.com/r1.5554946ab01d97.36996823;cb=%25%CACHEBUSTER%25%25'
+                }
+            }
+        });
+		
+</script>
+</body>
+</html>
